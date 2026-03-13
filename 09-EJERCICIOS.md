@@ -103,17 +103,16 @@ DATA([d/Account] = "Revenue_MA3", [d/Date] = "202602") =
 // Marzo en adelante: media de los 3 ultimos meses
 MEMBERSET [d/Date] = "202603" TO "202612"
 
-FOREACH [d/Date]
-    DATA([d/Account] = "Revenue_MA3") =
-        (RESULTLOOKUP([d/Account] = "Revenue") +
-         RESULTLOOKUP([d/Account] = "Revenue", [d/Date] = PREVIOUS(1)) +
-         RESULTLOOKUP([d/Account] = "Revenue", [d/Date] = PREVIOUS(2))) / 3
-ENDFOR
+DATA([d/Account] = "Revenue_MA3") =
+    (RESULTLOOKUP([d/Account] = "Revenue") +
+     RESULTLOOKUP([d/Account] = "Revenue", [d/Date] = PREVIOUS(1)) +
+     RESULTLOOKUP([d/Account] = "Revenue", [d/Date] = PREVIOUS(2))) / 3
 ```
 
-Pregunta: ¿Necesitamos FOREACH aqui? Tecnicamente NO, porque cada mes
-lee solo datos originales de Revenue (no datos recien calculados).
-Pero tampoco perjudica tenerlo.
+**¿Por que NO lleva FOREACH?** Cada mes lee solo datos originales de Revenue
+(no datos recien calculados por este script). Marzo lee Revenue de ene/feb/mar,
+abril lee Revenue de feb/mar/abr — son lecturas independientes.
+FOREACH solo se necesita cuando una iteracion depende del resultado de la anterior.
 </details>
 
 ---
@@ -246,27 +245,30 @@ MEMBERSET [d/Account] = ("Principal", "MonthlyRate", "MonthlyPayment",
 // %ANNUAL_RATE% = 5
 // %TERM_MONTHS% = 60
 
-VARIABLEFLOAT @monthlyRate
+FLOAT @monthlyRate
+FLOAT @monthlyPayment
 
 // Tipo mensual = tipo anual / 12 / 100
-// Nota: no podemos calcular la cuota con la formula financiera completa
-// porque Advanced Formulas no tiene POWER. Usaremos un approach simplificado.
+@monthlyRate = %ANNUAL_RATE% / 100 / 12
 
-// Cuota mensual (precalculada fuera o pasada como parametro)
+// Cuota mensual con sistema frances:
 // Cuota = Principal * (r * (1+r)^n) / ((1+r)^n - 1)
-// Con 500000, 5%/12, 60 meses = 9.435,62
-// %MONTHLY_PAYMENT% = 9435.62
+// POWER() esta disponible en Advanced Formulas
+@monthlyPayment = %LOAN_AMOUNT% *
+    (@monthlyRate * POWER(1 + @monthlyRate, %TERM_MONTHS%)) /
+    (POWER(1 + @monthlyRate, %TERM_MONTHS%) - 1)
+// Con 500000, 5%/12, 60 meses = 9435.62
 
 // Mes 1
 DATA([d/Account] = "Balance", [d/Date] = "202601") = %LOAN_AMOUNT%
 
-DATA([d/Account] = "MonthlyPayment") = %MONTHLY_PAYMENT%
+DATA([d/Account] = "MonthlyPayment") = @monthlyPayment
 
 DATA([d/Account] = "InterestPart", [d/Date] = "202601") =
-    %LOAN_AMOUNT% * %ANNUAL_RATE% / 100 / 12
+    %LOAN_AMOUNT% * @monthlyRate
 
 DATA([d/Account] = "CapitalPart", [d/Date] = "202601") =
-    %MONTHLY_PAYMENT% -
+    @monthlyPayment -
     RESULTLOOKUP([d/Account] = "InterestPart", [d/Date] = "202601")
 
 // Mes 2 en adelante
@@ -280,11 +282,11 @@ FOREACH [d/Date] ASC
 
     // Interes = saldo pendiente * tipo mensual
     DATA([d/Account] = "InterestPart") =
-        RESULTLOOKUP([d/Account] = "Balance") * %ANNUAL_RATE% / 100 / 12
+        RESULTLOOKUP([d/Account] = "Balance") * @monthlyRate
 
     // Capital = cuota - interes
     DATA([d/Account] = "CapitalPart") =
-        %MONTHLY_PAYMENT% -
+        @monthlyPayment -
         RESULTLOOKUP([d/Account] = "InterestPart")
 ENDFOR
 ```

@@ -421,3 +421,244 @@ DATA([d/Account] = "GrossProfit", [d/Company] = "Group") =
     RESULTLOOKUP([d/Account] = "Revenue", [d/Company] = "Group") -
     RESULTLOOKUP([d/Account] = "COGS", [d/Company] = "Group")
 ```
+
+---
+
+## CASO 9: Eliminacion intercompany con ELIMMEMBER
+
+### Contexto
+Tres filiales se venden entre si. El equipo de consolidacion necesita eliminar
+las ventas/compras intercompany automaticamente usando la jerarquia de consolidacion.
+Las cuentas IC_AR (cuentas a cobrar intercompany) e IC_AP (cuentas a pagar) deben
+cancelarse en el nodo de eliminacion correspondiente.
+
+### Jerarquia de consolidacion
+```
+GROUP
+├── ELIM_ES_DE       ← nodo de eliminacion (atributo Elimination = "Y")
+├── ELIM_ES_US       ← nodo de eliminacion
+├── ELIM_DE_US       ← nodo de eliminacion
+├── ES               ← filial España
+├── DE               ← filial Alemania
+└── US               ← filial USA
+```
+
+### Dimensiones del modelo
+- `[d/Entity]` — las filiales (ES, DE, US) y nodos de eliminacion
+- `[d/Interco_Entity]` — la contraparte intercompany
+- `[d/Account]` — cuentas (IC_AR, IC_AP, y sus cuentas de eliminacion en atributo [p/ElimAccount])
+- `[d/Audit]` — pista de auditoria ("10" = dato original, "30" = eliminacion)
+
+### Script
+```
+CONFIG.GENERATE_UNBOOKED_DATA = OFF
+CONFIG.FLIPPING_SIGN_ACCORDING_ACCTYPE = ON
+
+MEMBERSET [d/Date] = "202601" TO "202612"
+MEMBERSET [d/Audit] = "10"
+
+// Solo actuar sobre cuentas intercompany
+IF [d/Account] = ("IC_AR", "IC_AP") THEN
+
+    // Paso 1: Reversal — escribir el negativo en el nodo de eliminacion
+    // ELIMMEMBER() busca en la jerarquia el primer padre comun de Entity y
+    // Interco_Entity que tenga el atributo Elimination = "Y"
+    DATA(
+        [d/Entity] = ELIMMEMBER(
+            [d/Entity].[h/Consolidation],
+            [d/Entity],
+            [d/Interco_Entity],
+            [d/Entity].[p/Elimination] = "Y"
+        ),
+        [d/Audit] = "30"
+    ) = RESULTLOOKUP() * -1
+
+    // Paso 2: Reclasificacion — mover a la cuenta de eliminacion
+    // [d/Account].[p/ElimAccount] es un atributo que mapea IC_AR → ELIM_AR, IC_AP → ELIM_AP
+    DATA(
+        [d/Entity] = ELIMMEMBER(
+            [d/Entity].[h/Consolidation],
+            [d/Entity],
+            [d/Interco_Entity],
+            [d/Entity].[p/Elimination] = "Y"
+        ),
+        [d/Account] = [d/Account].[p/ElimAccount],
+        [d/Audit] = "30"
+    ) = RESULTLOOKUP()
+
+ENDIF
+```
+
+### Que pasa paso a paso
+
+Ejemplo: ES vende 100.000 a DE.
+
+```
+ANTES (dato original, Audit=10):
+  Entity=ES, Interco=DE, Account=IC_AR, Valor=100000
+  Entity=DE, Interco=ES, Account=IC_AP, Valor=100000
+
+ELIMMEMBER busca en la jerarquia:
+  Padre comun de ES y DE con Elimination="Y" → ELIM_ES_DE
+
+DESPUES (Audit=30, eliminacion):
+  Entity=ELIM_ES_DE, Account=IC_AR, Valor=-100000  ← reversal paso 1
+  Entity=ELIM_ES_DE, Account=ELIM_AR, Valor=100000 ← reclasificacion paso 2
+  Entity=ELIM_ES_DE, Account=IC_AP, Valor=-100000  ← reversal paso 1
+  Entity=ELIM_ES_DE, Account=ELIM_AP, Valor=100000 ← reclasificacion paso 2
+
+RESULTADO CONSOLIDADO (Group):
+  IC_AR:  100000 (ES) + (-100000) (ELIM) = 0  ← eliminado
+  IC_AP:  100000 (DE) + (-100000) (ELIM) = 0  ← eliminado
+```
+
+### Por que usar ELIMMEMBER en vez de hardcodear
+- Si añades una filial nueva, ELIMMEMBER la detecta automaticamente via jerarquia
+- No necesitas IF por cada par de filiales
+- El auditor ve las eliminaciones separadas en Audit=30
+
+---
+
+## CASO 10: Arrastre de saldos con CARRYFORWARD
+
+### Contexto
+Modelo de balance con apertura, cierre y movimientos intermedios. El opening
+de cada mes es el closing del anterior. Clasicamente se hace con FOREACH, pero
+CARRYFORWARD es mas rapido y limpio.
+
+### Datos
+```
+Dimension [d/Flow]: OPENING, HIRES, TERMINATIONS, TRANSFERS, CLOSING
+Dimension [d/Date]: 202601 a 202612
+Dimension [d/Account]: HEADCOUNT
+```
+
+### Script con FOREACH (clasico, lento)
+```
+MEMBERSET [d/Date] = "202601" TO "202612"
+
+FOREACH [d/Date] ASC
+    DATA([d/Flow] = "OPENING") =
+        RESULTLOOKUP([d/Flow] = "CLOSING", [d/Date] = PREVIOUS(1))
+
+    DATA([d/Flow] = "CLOSING") =
+        RESULTLOOKUP([d/Flow] = "OPENING") +
+        RESULTLOOKUP([d/Flow] = "HIRES") -
+        RESULTLOOKUP([d/Flow] = "TERMINATIONS") +
+        RESULTLOOKUP([d/Flow] = "TRANSFERS")
+ENDFOR
+```
+
+### Script con CARRYFORWARD (optimizado)
+```
+MEMBERSET [d/Date] = "202601" TO "202612"
+
+DATA() = CARRYFORWARD(
+    [d/Flow],           // dimension de movimiento
+    "OPENING",          // miembro de apertura
+    "CLOSING",          // miembro de cierre (se calcula automaticamente)
+    "HIRES",            // primer flujo
+    "TERMINATIONS",     // segundo flujo
+    "TRANSFERS"         // tercer flujo
+)
+```
+
+CARRYFORWARD hace internamente lo que el FOREACH hace manualmente:
+1. Opening del mes = Closing del mes anterior
+2. Closing = Opening + todos los flujos
+3. Repite para cada periodo en orden
+
+### Ventajas de CARRYFORWARD
+- Mas rapido (optimizado a nivel de motor SAP)
+- Menos codigo (1 linea vs 8 lineas)
+- Menos errores (no te olvidas de un flujo)
+- SAP puede optimizar la ejecucion internamente
+
+### Resultado
+```
+| Flow         | 202601 | 202602 | 202603 |
+|--------------|--------|--------|--------|
+| OPENING      | 100    | 108    | 113    |
+| HIRES        | 12     | 8      | 5      |
+| TERMINATIONS | 3      | 2      | 4      |
+| TRANSFERS    | -1     | -1     | 0      |
+| CLOSING      | 108    | 113    | 114    |
+```
+
+---
+
+## CASO 11: Driver-Based Planning con ATTRIBUTE
+
+### Contexto
+Revenue se calcula a partir de drivers (Units, Price, Discount) que el usuario
+introduce. Cada producto tiene un tipo de pricing diferente almacenado como
+atributo de la dimension Product.
+
+### Atributos de la dimension Product
+```
+| Miembro | [p/PricingType] | [p/MinMargin] |
+|---------|-----------------|---------------|
+| Prod_A  | standard        | 20            |
+| Prod_B  | volume_discount | 15            |
+| Prod_C  | premium         | 35            |
+```
+
+### Script
+```
+MEMBERSET [d/Date] = "202601" TO "202612"
+MEMBERSET [d/Version] = "Plan"
+
+FOREACH.BOOKED [d/Product]
+
+    // Calculo de Revenue segun tipo de pricing
+    IF ATTRIBUTE([d/Product].[p/PricingType]) = "standard" THEN
+        DATA([d/Account] = "Revenue") =
+            RESULTLOOKUP([d/Account] = "Units") *
+            RESULTLOOKUP([d/Account] = "Price")
+
+    ELSEIF ATTRIBUTE([d/Product].[p/PricingType]) = "volume_discount" THEN
+        // Descuento escalonado: >1000 unidades = 10% dto
+        IF RESULTLOOKUP([d/Account] = "Units") > 1000 THEN
+            DATA([d/Account] = "Revenue") =
+                RESULTLOOKUP([d/Account] = "Units") *
+                RESULTLOOKUP([d/Account] = "Price") * 0.90
+        ELSE
+            DATA([d/Account] = "Revenue") =
+                RESULTLOOKUP([d/Account] = "Units") *
+                RESULTLOOKUP([d/Account] = "Price")
+        ENDIF
+
+    ELSEIF ATTRIBUTE([d/Product].[p/PricingType]) = "premium" THEN
+        DATA([d/Account] = "Revenue") =
+            RESULTLOOKUP([d/Account] = "Units") *
+            RESULTLOOKUP([d/Account] = "Price") * 1.15
+
+    ENDIF
+
+    // COGS y Margen
+    DATA([d/Account] = "COGS") =
+        RESULTLOOKUP([d/Account] = "Units") *
+        RESULTLOOKUP([d/Account] = "UnitCost")
+
+    DATA([d/Account] = "Margin") =
+        RESULTLOOKUP([d/Account] = "Revenue") -
+        RESULTLOOKUP([d/Account] = "COGS")
+
+    // Alerta: margen por debajo del minimo (leido del atributo)
+    IF RESULTLOOKUP([d/Account] = "Revenue") > 0 THEN
+        IF (RESULTLOOKUP([d/Account] = "Margin") /
+            RESULTLOOKUP([d/Account] = "Revenue") * 100) <
+            ATTRIBUTE([d/Product].[p/MinMargin]) THEN
+            DATA([d/Account] = "MarginAlert") = 1
+        ELSE
+            DATA([d/Account] = "MarginAlert") = 0
+        ENDIF
+    ENDIF
+
+ENDFOR
+```
+
+### Que aporta ATTRIBUTE aqui
+- El tipo de pricing esta en los datos maestros, no hardcodeado
+- Si añades un producto nuevo con su PricingType, el script lo maneja sin cambios
+- El margen minimo es configurable por producto sin tocar el script

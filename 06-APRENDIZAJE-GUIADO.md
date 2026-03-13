@@ -138,7 +138,7 @@ Esto es importante: no sobreescribe con 0, simplemente no hace nada.
 
 Si quieres tratar vacios como 0:
 ```
-CONFIG.UNBOOKED = ON
+CONFIG.GENERATE_UNBOOKED_DATA = ON
 ```
 Ahora las celdas vacias valen 0 en vez de NULL.
 
@@ -299,8 +299,8 @@ DATA([d/Account] = "Bonus") = RESULTLOOKUP([d/Account] = #Rev) * 0.02
 ### Variables numericas
 
 ```
-VARIABLEINTEGER @monthCount
-VARIABLEFLOAT @avgRevenue
+INTEGER @monthCount
+FLOAT @avgRevenue
 
 // No se pueden usar directamente con DATA/RESULTLOOKUP
 // Se usan en bucles FOR y en condiciones
@@ -314,8 +314,8 @@ ENDFOR
 | Tipo | Prefijo | Para que |
 |------|---------|----------|
 | VARIABLEMEMBER | # | Guardar datos de celdas temporalmente |
-| VARIABLEINTEGER | @ | Contadores en bucles FOR |
-| VARIABLEFLOAT | @ | Calculos intermedios con decimales |
+| INTEGER | @ | Contadores en bucles FOR |
+| FLOAT | @ | Calculos intermedios con decimales |
 
 ---
 

@@ -326,7 +326,7 @@ Busca:    Account=Cost,    Date=202601, Company=ES, Version=Actual
 
 ### Que devuelve si la celda esta vacia
 
-| Situacion | CONFIG.UNBOOKED | Devuelve | Efecto en DATA() |
+| Situacion | CONFIG.GENERATE_UNBOOKED_DATA | Devuelve | Efecto en DATA() |
 |-----------|-----------------|----------|------------------|
 | Celda vacia | OFF (defecto) | NULL | DATA no escribe nada |
 | Celda vacia | ON | 0 | DATA escribe 0 (o el resultado del calculo) |
@@ -457,7 +457,7 @@ leerias el Revenue que acabas de sobreescribir, no el original.
 
 ---
 
-## 5. VARIABLEINTEGER (@) y VARIABLEFLOAT (@) — Contadores y calculos intermedios
+## 5. INTEGER (@) y FLOAT (@) — Contadores y calculos intermedios
 
 ### Que hace en la base de datos
 
@@ -465,13 +465,13 @@ leerias el Revenue que acabas de sobreescribir, no el original.
 de memoria pura que solo viven en el script.
 
 ```
-VARIABLEINTEGER @counter       // Crea una variable entera = 0
-VARIABLEFLOAT @ratio           // Crea una variable decimal = 0.0
+INTEGER @counter       // Crea una variable entera = 0
+FLOAT @ratio           // Crea una variable decimal = 0.0
 ```
 
 ### Diferencia clave con VARIABLEMEMBER
 
-| | VARIABLEMEMBER (#) | VARIABLEINTEGER/FLOAT (@) |
+| | VARIABLEMEMBER (#) | INTEGER/FLOAT (@) |
 |--|---------------------|--------------------------|
 | Donde vive | Fila temporal en la tabla del modelo | Solo en memoria del script |
 | Tiene dimensiones | Si (Date, Company, etc.) | No, es un escalar |
@@ -481,7 +481,7 @@ VARIABLEFLOAT @ratio           // Crea una variable decimal = 0.0
 ### Ejemplo: @counter como iterador
 
 ```
-VARIABLEINTEGER @i
+INTEGER @i
 
 FOR @i = 1 TO 12 STEP 1
     // @i vale 1, luego 2, luego 3... hasta 12
@@ -503,7 +503,7 @@ Fin: @i se destruye
 ### Ejemplo: @ratio para calculo intermedio
 
 ```
-VARIABLEFLOAT @growthRate
+FLOAT @growthRate
 
 // Supongamos que calculas un ratio complejo
 // @growthRate NO puede almacenar valores por celda, es UN SOLO NUMERO
@@ -701,17 +701,17 @@ Ambas condiciones deben cumplirse para que DATA se ejecute.
 
 ## 8. CONFIG — Configuracion global del entorno de ejecucion
 
-### CONFIG.UNBOOKED = ON
+### CONFIG.GENERATE_UNBOOKED_DATA = ON
 
 Cambia como la base de datos trata las celdas vacias.
 
 ```
-CONFIG.UNBOOKED = OFF (defecto):
+CONFIG.GENERATE_UNBOOKED_DATA = OFF (defecto):
   Celda vacia → RESULTLOOKUP devuelve NULL
   NULL en cualquier operacion → NULL
   DATA(... ) = NULL → no escribe nada
 
-CONFIG.UNBOOKED = ON:
+CONFIG.GENERATE_UNBOOKED_DATA = ON:
   Celda vacia → RESULTLOOKUP devuelve 0
   0 en operaciones → se calcula normalmente
   DATA(... ) = 0 → escribe 0
@@ -967,8 +967,8 @@ a mitad, NO se guarda nada (es transaccional).
 | `DATA() = NULL` | `DELETE` | No | **Si** (borra) | No | No |
 | `RESULTLOOKUP()` | `SELECT` | **Si** | No | No | No |
 | `VARIABLEMEMBER #` | `CREATE TEMP TABLE` | No | No | **Si** | No |
-| `VARIABLEINTEGER @` | `DECLARE @var INT` | No | No | No (solo memoria) | No |
-| `VARIABLEFLOAT @` | `DECLARE @var FLOAT` | No | No | No (solo memoria) | No |
+| `INTEGER @` | `DECLARE @var INT` | No | No | No (solo memoria) | No |
+| `FLOAT @` | `DECLARE @var FLOAT` | No | No | No (solo memoria) | No |
 | `FOREACH` | `ORDER BY` + cursor | No | No | No | No (controla orden) |
 | `FOREACH.BOOKED` | `ORDER BY` + `WHERE EXISTS` | No | No | No | No (filtra vacios) |
 | `IF` | `CASE WHEN` | No | No | No | No (filtra filas) |

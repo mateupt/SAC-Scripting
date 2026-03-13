@@ -148,9 +148,9 @@ Si RESULTLOOKUP lee una celda vacia → devuelve NULL.
 NULL * 1.1 = NULL. NULL + 100 = NULL.
 DATA() = NULL → no escribe nada.
 
-### Correccion (opcion A): CONFIG.UNBOOKED
+### Correccion (opcion A): CONFIG.GENERATE_UNBOOKED_DATA
 ```
-CONFIG.UNBOOKED = ON
+CONFIG.GENERATE_UNBOOKED_DATA = ON
 // Ahora las celdas vacias valen 0 en vez de NULL
 DATA() = RESULTLOOKUP() * 1.1    // 0 * 1.1 = 0 (escribe 0)
 ```
@@ -165,7 +165,7 @@ ENDIF
 ```
 
 ### Cuando usar cada opcion
-- CONFIG.UNBOOKED = ON → cuando quieres tratar TODOS los vacios como 0
+- CONFIG.GENERATE_UNBOOKED_DATA = ON → cuando quieres tratar TODOS los vacios como 0
 - Comprobar NULL → cuando solo algunos casos necesitan tratamiento especial
 
 ---
@@ -209,7 +209,7 @@ console.log(revenue);              // No existe console
 for (let i = 0; i < 12; i++) {}   // Sintaxis JS
 
 // EN ADVANCED FORMULAS se escribe asi:
-VARIABLEINTEGER @revenue
+INTEGER @revenue
 IF RESULTLOOKUP([d/Account] = "Revenue") > 0 THEN
     // ...
 ENDIF
@@ -231,7 +231,7 @@ ENDFOR
 - [ ] ¿El scope es lo mas restrictivo posible?
 - [ ] ¿Los FOREACH tienen ASC/DESC si uso PREVIOUS/NEXT?
 - [ ] ¿He protegido contra division por cero?
-- [ ] ¿Necesito CONFIG.UNBOOKED para tratar vacios?
+- [ ] ¿Necesito CONFIG.GENERATE_UNBOOKED_DATA para tratar vacios?
 - [ ] ¿Los calculos dependientes estan en orden correcto?
 - [ ] ¿He usado FOREACH.BOOKED donde puedo?
 - [ ] ¿He puesto IF fuera de FOREACH (no al reves)?
