@@ -38,7 +38,8 @@ var member = PlanningModel_1.getMember("CostCenter", "CC_1000");
 var members = PlanningModel_1.getMembers("CostCenter");
 
 for (var i = 0; i < members.length; i++) {
-    console.log(members[i].id + " - " + members[i].description);
+    // Nota: console.log() solo funciona para depuracion en el editor, no es API oficial
+    Application.showMessage(ApplicationMessageType.Info, members[i].id + " - " + members[i].description);
 }
 ```
 
@@ -158,6 +159,16 @@ if (newId === "" || newDesc === "") {
 // onClick del boton "Actualizar"
 var targetId = InputField_TargetId.getValue();
 var newDesc = InputField_NewDescription.getValue();
+
+if (targetId === "" || targetId === undefined) {
+    Application.showMessage(ApplicationMessageType.Error, "Introduce el ID del miembro a actualizar");
+    return;
+}
+
+if (newDesc === "" || newDesc === undefined) {
+    Application.showMessage(ApplicationMessageType.Error, "Introduce la nueva descripcion");
+    return;
+}
 
 PlanningModel_1.updateMembers("Product", [{
     "id": targetId,

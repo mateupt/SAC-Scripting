@@ -265,22 +265,40 @@ if (success) {
 
 ```javascript
 // onClick
+var newName = InputField_VersionName.getValue();
+
+// Validar input
+if (newName === "" || newName === undefined) {
+    Application.showMessage(ApplicationMessageType.Error, "Introduce un nombre para la version");
+    return;
+}
+
+// Verificar planning habilitado
+if (!Table_1.getPlanning().isEnabled()) {
+    Application.showMessage(ApplicationMessageType.Error, "Planning no esta habilitado");
+    return;
+}
+
 Application.showBusyIndicator();
 
-var newName = InputField_VersionName.getValue();
 var actual = Table_1.getPlanning().getPublicVersion("Actual");
 
-// 1. Copiar sin datos
-actual.copy(newName, PlanningCopyOption.NoData);
+// 1. Copiar sin datos (copy devuelve boolean)
+var success = actual.copy(newName, PlanningCopyOption.NoData);
 
-// 2. Publicar como version publica tipo Planning
-var privateCopy = Table_1.getPlanning().getPrivateVersion(newName);
-privateCopy.publishAs(newName, PlanningCategory.Planning);
+if (success) {
+    // 2. Publicar como version publica tipo Planning
+    var privateCopy = Table_1.getPlanning().getPrivateVersion(newName);
+    privateCopy.publishAs(newName, PlanningCategory.Planning);
 
-// 3. Refrescar y notificar
-Table_1.getDataSource().refreshData();
+    // 3. Refrescar y notificar
+    Table_1.getDataSource().refreshData();
+    Application.showMessage(ApplicationMessageType.Success, "Version '" + newName + "' creada");
+} else {
+    Application.showMessage(ApplicationMessageType.Error, "Error al copiar la version");
+}
+
 Application.hideBusyIndicator();
-Application.showMessage(ApplicationMessageType.Success, "Version '" + newName + "' creada");
 ```
 
 ### Boton "Backup antes de Data Action"
@@ -291,12 +309,18 @@ Application.showBusyIndicator();
 
 // 1. Crear backup con timestamp
 var backupName = "Backup_" + Date.now().toString();
-Table_1.getPlanning().getPublicVersion("Forecast").copy(
+var success = Table_1.getPlanning().getPublicVersion("Forecast").copy(
     backupName,
     PlanningCopyOption.AllData
 );
 
-// 2. Ejecutar Data Action
+if (!success) {
+    Application.hideBusyIndicator();
+    Application.showMessage(ApplicationMessageType.Error, "Error al crear backup. Data Action cancelada.");
+    return;
+}
+
+// 2. Ejecutar Data Action (solo si el backup fue exitoso)
 DataAction_Calculo.execute({
     "VERSION": "Forecast",
     "YEAR": Dropdown_Year.getSelectedKey()

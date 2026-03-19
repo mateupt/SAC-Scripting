@@ -9,6 +9,9 @@ En el evento `onInitialization` del Canvas/Application:
 **Opcion A: con getResultSet() (todas las dimensiones)**
 
 ```javascript
+// Limpiar primero para evitar duplicados si onInitialization se ejecuta mas de una vez
+Dropdown_Product.removeAllItems();
+
 var resultSet = Table_1.getDataSource().getResultSet();
 
 for (var i = 0; i < resultSet.length; i++) {
@@ -19,6 +22,9 @@ for (var i = 0; i < resultSet.length; i++) {
 **Opcion B: con getMembers() (una dimension)**
 
 ```javascript
+// Limpiar primero para evitar duplicados
+Dropdown_Product.removeAllItems();
+
 var members = Table_1.getDataSource().getMembers("Product");
 
 for (var i = 0; i < members.length; i++) {

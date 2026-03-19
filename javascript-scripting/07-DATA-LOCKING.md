@@ -117,8 +117,20 @@ if (locking !== undefined) {
 ```javascript
 // onClick
 var locking = Table_1.getPlanning().getDataLocking();
+
+// Verificar que Data Locking esta habilitado
+if (locking === undefined) {
+    Application.showMessage(ApplicationMessageType.Error, "Data Locking no esta habilitado en el modelo");
+    return;
+}
+
 var regions = ["EMEA", "APAC", "AMER", "LATAM"];
 var quarter = Dropdown_Quarter.getSelectedKey();
+
+if (quarter === "" || quarter === undefined) {
+    Application.showMessage(ApplicationMessageType.Error, "Selecciona un trimestre");
+    return;
+}
 
 Application.showBusyIndicator();
 

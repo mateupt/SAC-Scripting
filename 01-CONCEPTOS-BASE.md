@@ -41,7 +41,7 @@ Caracteristicas:
 
 Son complementarios: el JavaScript de Analytic Apps puede **disparar** Data
 Actions y pasarles parametros, pero la logica pesada de datos va en Advanced
-Formulas.
+Formulas. Ver la seccion de [JavaScript Scripting](javascript-scripting/01-INTRODUCCION.md) para la referencia completa del otro lado.
 
 ## Estructura de un script Advanced Formula
 

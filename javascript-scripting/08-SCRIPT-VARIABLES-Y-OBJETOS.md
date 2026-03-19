@@ -22,17 +22,30 @@ de la aplicacion. Se crean en el Designer (panel Outline → Script Variables).
 
 ### Uso en scripts
 
-```javascript
-// Leer valor
-var region = ScriptVar_Region.getValue();
+Las Script Variables se acceden **directamente por su nombre**, sin metodos getter/setter:
 
-// Escribir valor
-ScriptVar_Region.setValue("APAC");
+```javascript
+// Leer valor (acceso directo, NO existe .getValue())
+var region = ScriptVar_Region;
+
+// Escribir valor (asignacion directa, NO existe .setValue())
+ScriptVar_Region = "APAC";
 
 // Con arrays (si "Set As Array" esta activado)
-ScriptVar_Regions.setValue(["EMEA", "APAC", "AMER"]);
-var regions = ScriptVar_Regions.getValue();
+ScriptVar_Regions = ["EMEA", "APAC", "AMER"];
+var regions = ScriptVar_Regions;
+
+// Usar en condiciones
+if (ScriptVar_IsAdmin) {
+    Panel_Admin.setVisible(true);
+}
+
+// Usar como parametro
+ds.setDimensionFilter("Region", ScriptVar_Region);
 ```
+
+> **Nota:** A diferencia de los widgets (que usan `.getSelectedKey()`, `.getValue()`, etc.),
+> las Script Variables son variables JavaScript normales que se leen y escriben por asignacion directa.
 
 ### Pasar variables por URL
 
@@ -140,6 +153,31 @@ ds.setDimensionFilter("A", "1");
 ds.setDimensionFilter("B", "2");
 ds.setDimensionFilter("C", "3");
 ds.setRefreshPaused(PauseMode.Off);
+```
+
+```javascript
+// AVANZADO: pausar widgets invisibles en aplicaciones con tabs
+// En onInitialization: pausar tabs que no estan visibles
+Chart_Tab2.getDataSource().setRefreshPaused(true);
+Table_Tab3.getDataSource().setRefreshPaused(true);
+
+// En el evento de cambio de tab: reactivar solo el que se muestra
+if (PageBook_1.getSelectedPageId() === "Tab2") {
+    Chart_Tab2.getDataSource().setRefreshPaused(false);
+}
+```
+
+```javascript
+// EVITAR ROUNDTRIPS INNECESARIOS:
+
+// MAL: getMembers() hace roundtrip al backend cada vez
+var members = ds.getMembers("Account");
+
+// MEJOR: getResultMember() usa datos ya cargados en el widget (sin roundtrip)
+var member = ds.getResultMember("Account", "Revenue");
+
+// MEJOR: getResultSet() tambien usa datos ya cargados
+var data = Table_1.getDataSource().getResultSet();
 ```
 
 ### Validacion de inputs

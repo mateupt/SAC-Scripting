@@ -93,9 +93,18 @@ for (var i = 0; i < resultSet.length; i++) {
 
 ### getData - Obtener valor de una celda
 
+Recibe un **selection object** que identifica la celda por sus dimensiones:
+
 ```javascript
-// Valor por seleccion de propiedades
-var value = ds.getData("Account", "Revenue");
+// Valor por selection object (combinacion de dimensiones)
+var value = ds.getData({"Account": "Revenue", "Date": "202601"});
+
+// Selection object con multiples dimensiones
+var value = ds.getData({
+    "Account": "Revenue",
+    "Region": "EMEA",
+    "Date": "202601"
+});
 ```
 
 ### getDataSelections - Obtener selecciones
