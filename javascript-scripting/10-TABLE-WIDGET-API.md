@@ -248,7 +248,7 @@ if (revenue !== undefined) {
 
 ## Data Entry con Table Planning API
 
-Para escribir datos de vuelta al modelo, ver la guia [12-DATA-ENTRY-PLANNING.md](12-DATA-ENTRY-PLANNING.md).
+Para escribir datos de vuelta al modelo, ver la guia [Data Entry y Planning](./12-DATA-ENTRY-PLANNING.md).
 
 ## Pitfalls comunes
 

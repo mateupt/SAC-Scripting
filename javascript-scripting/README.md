@@ -25,5 +25,7 @@ Complementa la seccion de [Advanced Formulas](../01-CONCEPTOS-BASE.md) (Data Act
 | 15 | [Application Lifecycle](15-APPLICATION-LIFECYCLE.md) | onInitialization, Timer, Pause Refresh, estado, sesion |
 | 16 | [Widget Manipulation Condicional](16-WIDGET-MANIPULATION-CONDICIONAL.md) | show/hide por datos, roles, CSS dinamico, formularios |
 | 17 | [Integration Patterns](17-INTEGRATION-PATTERNS.md) | NavigationUtils, URL API, embedding, BW/BPC, cross-app |
+| 18 | [Dashboards Practicos](18-DASHBOARDS-PRACTICOS.md) | 6 dashboards completos: ejecutivo, plan vs actual, planning, multi-pagina, auto-refresh, export |
+| 19 | [Botones Practicos](19-BOTONES-PRACTICOS.md) | 12 patrones de botones: guardar, toggle, confirmar, filtros, export, Data Actions, undo, toolbar |
 
-Empieza por `01-INTRODUCCION` y sigue el orden numerico.
+Empieza por `01-INTRODUCCION` y sigue el orden numerico. Los archivos 18 y 19 son ejemplos practicos que puedes consultar en cualquier momento.

@@ -44,6 +44,8 @@ Todo el contenido esta en espanol.
 | 15 | [Application Lifecycle](javascript-scripting/15-APPLICATION-LIFECYCLE.md) | onInitialization, Timer, Pause Refresh, estado, sesion |
 | 16 | [Widget Manipulation Condicional](javascript-scripting/16-WIDGET-MANIPULATION-CONDICIONAL.md) | show/hide por datos, roles, CSS dinamico, formularios |
 | 17 | [Integration Patterns](javascript-scripting/17-INTEGRATION-PATTERNS.md) | NavigationUtils, URL API, embedding, BW/BPC, cross-app |
+| 18 | [Dashboards Practicos](javascript-scripting/18-DASHBOARDS-PRACTICOS.md) | 6 dashboards completos: ejecutivo, plan vs actual, planning, multi-pagina, auto-refresh, export |
+| 19 | [Botones Practicos](javascript-scripting/19-BOTONES-PRACTICOS.md) | 12 patrones de botones: guardar, toggle, confirmar, filtros, export, Data Actions, undo, toolbar |
 
 ---
 

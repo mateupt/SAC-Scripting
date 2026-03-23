@@ -92,8 +92,8 @@ que cada cambio dispare un roundtrip al backend:
 var ds1 = Table_1.getDataSource();
 var ds2 = Chart_1.getDataSource();
 
-ds1.setRefreshPaused(true);
-ds2.setRefreshPaused(true);
+ds1.setRefreshPaused(PauseMode.On);
+ds2.setRefreshPaused(PauseMode.On);
 
 // Hacer multiples cambios sin roundtrips intermedios
 ds1.setDimensionFilter("Year", "2026");
@@ -102,8 +102,8 @@ ds2.setDimensionFilter("Year", "2026");
 ds2.setDimensionFilter("Version", "Plan");
 
 // Reanudar refreshes - ahora se hace UN solo roundtrip
-ds1.setRefreshPaused(false);
-ds2.setRefreshPaused(false);
+ds1.setRefreshPaused(PauseMode.Off);
+ds2.setRefreshPaused(PauseMode.Off);
 ```
 
 > **Documentado por SAP:** Esta es la practica recomendada oficialmente para optimizar
@@ -117,11 +117,11 @@ ds2.setRefreshPaused(false);
 // pausa su refresh hasta que sean visibles
 
 var dsTab2 = Table_Tab2.getDataSource();
-dsTab2.setRefreshPaused(true);
-// Table_Tab2 no carga datos hasta que se haga setRefreshPaused(false)
+dsTab2.setRefreshPaused(PauseMode.On);
+// Table_Tab2 no carga datos hasta que se reactive
 
 // En el evento del tab switch
-dsTab2.setRefreshPaused(false);
+dsTab2.setRefreshPaused(PauseMode.Off);
 // Ahora si carga datos
 ```
 

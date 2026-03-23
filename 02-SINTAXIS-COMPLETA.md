@@ -554,34 +554,34 @@ Los parametros se pueden pasar desde:
 | Categoria | Funcion | Que hace |
 |-----------|---------|----------|
 | **Escritura** | `DATA()` | Escribe valores (limpia scope primero) |
-| | `DATA.APPEND()` | Escribe valores (sin limpiar) |
-| | `DELETE()` | Borra celdas especificas |
+| **Escritura** | `DATA.APPEND()` | Escribe valores (sin limpiar) |
+| **Escritura** | `DELETE()` | Borra celdas especificas |
 | **Lectura** | `RESULTLOOKUP()` | Lee valor de una celda |
-| | `ATTRIBUTE()` | Lee propiedad de un miembro de dimension |
-| | `CARRYFORWARD()` | Arrastre de saldos optimizado |
-| | `ELIMMEMBER()` | Encuentra miembro de eliminacion IC |
+| **Lectura** | `ATTRIBUTE()` | Lee propiedad de un miembro de dimension |
+| **Lectura** | `CARRYFORWARD()` | Arrastre de saldos optimizado |
+| **Lectura** | `ELIMMEMBER()` | Encuentra miembro de eliminacion IC |
 | **Scope** | `MEMBERSET` | Filtra filas (WHERE) |
-| | `BASEMEMBER()` | Hojas de un nodo de jerarquia |
+| **Scope** | `BASEMEMBER()` | Hojas de un nodo de jerarquia |
 | **Agregacion** | `AGGREGATE_DIMENSIONS` | Dimensiones a agregar |
-| | `AGGREGATE_WRITETO` | Donde escribir el agregado |
+| **Agregacion** | `AGGREGATE_WRITETO` | Donde escribir el agregado |
 | **Cross-model** | `LINK` / `MODEL` | Leer de otro modelo |
 | **Tiempo** | `PREVIOUS(n)` / `NEXT(n)` | Navegar periodos |
-| | `FIRST()` / `LAST()` | Primer/ultimo periodo del año |
-| | `PREYEARLAST()` | Ultimo periodo del año anterior |
-| | `TODAY()` | Fecha actual UTC |
-| | `DAY/MONTH/YEAR/WEEK()` | Extraer componentes de fecha |
-| | `DAYSINMONTH/DAYSINYEAR()` | Dias en periodo |
-| | `DATERATIO()` | Solapamiento entre fechas |
-| | `DATEDIFF()` | Diferencia entre fechas |
+| **Tiempo** | `FIRST()` / `LAST()` | Primer/ultimo periodo del año |
+| **Tiempo** | `PREYEARLAST()` | Ultimo periodo del año anterior |
+| **Tiempo** | `TODAY()` | Fecha actual UTC |
+| **Tiempo** | `DAY/MONTH/YEAR/WEEK()` | Extraer componentes de fecha |
+| **Tiempo** | `DAYSINMONTH/DAYSINYEAR()` | Dias en periodo |
+| **Tiempo** | `DATERATIO()` | Solapamiento entre fechas |
+| **Tiempo** | `DATEDIFF()` | Diferencia entre fechas |
 | **Matematicas** | `ABS/ROUND/TRUNC/FLOOR/CEIL` | Redondeo |
-| | `SQRT/POWER/LOG/LOG10` | Potencias y logaritmos |
-| | `MOD/INT/FLOAT` | Modulo y conversion |
+| **Matematicas** | `SQRT/POWER/LOG/LOG10` | Potencias y logaritmos |
+| **Matematicas** | `MOD/INT/FLOAT` | Modulo y conversion |
 | **Variables** | `VARIABLEMEMBER #` | Fila temporal en el modelo |
-| | `INTEGER @` | Entero en memoria |
-| | `FLOAT @` | Decimal en memoria |
+| **Variables** | `INTEGER @` | Entero en memoria |
+| **Variables** | `FLOAT @` | Decimal en memoria |
 | **Control** | `IF/ELSEIF/ELSE/ENDIF` | Condicional |
-| | `FOREACH/FOREACH.BOOKED` | Bucle sobre dimension |
-| | `FOR @i/ENDFOR` | Bucle numerico |
+| **Control** | `FOREACH/FOREACH.BOOKED` | Bucle sobre dimension |
+| **Control** | `FOR @i/ENDFOR` | Bucle numerico |
 | | `BREAK` | Salir del bucle |
 | **Config** | `CONFIG.TIME_HIERARCHY` | Calendario vs fiscal |
 | | `CONFIG.GENERATE_UNBOOKED_DATA` | Vacios = 0 |
